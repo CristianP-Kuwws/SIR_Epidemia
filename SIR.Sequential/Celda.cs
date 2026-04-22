@@ -17,13 +17,10 @@ namespace SIR.Sequential
         public readonly int Columnas;
 
 
-        // array 1d para rendimiento, el indice es igual a (fils * Columnas + col)
         private EstadoCelda[] _actual;
         private EstadoCelda[] _siguiente;
 
-        private readonly double _beta;
-        private readonly double _gamma;
-        private readonly double _mu;
+        private readonly double _beta, _gamma, _mu;
 
         private readonly Random _numeroRandom;
 
@@ -31,9 +28,11 @@ namespace SIR.Sequential
         {
             Filas = filas;
             Columnas = columnas;
+
             _beta = beta;
             _gamma = gamma;
             _mu = mu;
+
             _numeroRandom = new Random(semilla);
 
             _actual = new EstadoCelda[filas * columnas];
@@ -42,27 +41,26 @@ namespace SIR.Sequential
 
         private int Idx(int f, int c) => f * Columnas + c;
 
-        public void Inicializar(int inicialesInfectados = 10)
+        public void Inicializar(int iniInfectados = 10)
         {
-            // Todos los susceptibles
             for (int i = 0; i < _actual.Length; i++)
             {
                 _actual[i] = EstadoCelda.Susceptible;
             }
 
-            // Colocar infectados cerca del centro
+            // infectados cerca del centro
 
             int filaColumna = Filas / 2;
             int columnaCol = Columnas / 2;
 
-            int infectadosColocados = 0;
+            int infectadosCol = 0;
 
-            for (int dr = -2; dr <= 2 && infectadosColocados < inicialesInfectados; dr++)
+            for (int dr = -2; dr <= 2 && infectadosCol < iniInfectados; dr++)
             {
-                for (int dc = -2; dc <= 2 && infectadosColocados < inicialesInfectados; dc++)
+                for (int dc = -2; dc <= 2 && infectadosCol < iniInfectados; dc++)
                 {
                     _actual[Idx(filaColumna + dr, columnaCol + dc)] = EstadoCelda.Infectada;
-                    infectadosColocados++;
+                    infectadosCol++;
                 }
 
             }
@@ -70,7 +68,7 @@ namespace SIR.Sequential
 
         }
 
-        // Contar vecinos infectados en direcciones arriba, abajo, izq, der
+        // vecinos infectados arriba, abajo, izquierda, derecha
 
         private int ContarVecinosInfectados(int f, int c)
         {
@@ -87,7 +85,6 @@ namespace SIR.Sequential
             return count;
         }
 
-        // Avanzar dia para aplicar las reglas SIR a toda la grilla
         public void AvanzarDia()
         {
             for (int f = 0; f < Filas; f++)
@@ -98,17 +95,18 @@ namespace SIR.Sequential
 
                     switch (estado)
                     {
+
                         case EstadoCelda.Susceptible:
                             int infectados = ContarVecinosInfectados(f, c);
                             if (infectados > 0)
                             {
-                                // probabilidad de no contagiarse equivale a (1-beta)^infectados
                                 double probSegura = Math.Pow(1.0 - _beta, infectados);
 
                                 if (_numeroRandom.NextDouble() > probSegura)
                                     _siguiente[Idx(f, c)] = EstadoCelda.Infectada;
                                 else
                                     _siguiente[Idx(f, c)] = EstadoCelda.Susceptible;
+
                             }
                             else
                             {
@@ -119,6 +117,7 @@ namespace SIR.Sequential
                         case EstadoCelda.Infectada:
                             double roll = _numeroRandom.NextDouble();
 
+
                             if (roll < _mu)
                                 _siguiente[Idx(f, c)] = EstadoCelda.Muerta;
                             else if (roll < _mu + _gamma)
@@ -127,21 +126,21 @@ namespace SIR.Sequential
                                 _siguiente[Idx(f, c)] = EstadoCelda.Infectada;
                             break;
 
-                        // recuperados y muertos se mantienen igual
                         default:
                             _siguiente[Idx(f, c)] = estado;
                             break;
                     }
+
                 }
             }
 
-            // Intercambiar buffers para convertir _siguiente en _actual
+            //  convertir _siguiente en _actual
+
             EstadoCelda[] temp = _actual;
             _actual = _siguiente;
             _siguiente = temp;
         }
 
-        // Obtener conteos para estadisticas
         public void ObtenerConteos(out int s, out int i, out int r, out int m)
         {
             s = i = r = m = 0;
@@ -158,7 +157,6 @@ namespace SIR.Sequential
             }
         }
 
-        // Acceso de lectura al estado actual 
         public EstadoCelda ObtenerCeldas(int r, int c) => _actual[Idx(r, c)];
     }
 }

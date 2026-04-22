@@ -8,32 +8,31 @@ namespace SIR.Parallel
     {
         static void Main(string[] args)
         {
-            // --- validacion grilla 10x10 ---
-            Console.WriteLine("--- Validacion 10x10 a 30 dias (4 hilos) ---");
+            Console.WriteLine("--- Validacion 10x10 a 30 dias en base a 4 hilos ---");
 
-            CeldaParalela grillaPeq = new CeldaParalela(
+            CeldaParalela grillaPequenia = new CeldaParalela(
                 filas: 10, columnas: 10,
                 beta: 0.5, gamma: 0.05, mu: 0.005,
                 semilla: 15
             );
 
-            grillaPeq.Inicializar(inicialesInfectados: 3);
+            grillaPequenia.Inicializar(inicialesInfectados: 3);
 
-            int poblacionTotal = 10 * 10;
+            int totalPoblacion = 10 * 10;
 
             for (int dia = 0; dia <= 30; dia++)
             {
                 int s, i, r, m;
-                grillaPeq.ObtenerConteos(out s, out i, out r, out m);
+                grillaPequenia.ObtenerConteos(out s, out i, out r, out m);
 
                 int suma = s + i + r + m;
 
-                string valido = (suma == poblacionTotal) ? "VALIDO" : "ERROR";
+                string valido = (suma == totalPoblacion) ? "VALIDO" : "ERROR";
                 Console.WriteLine($"Dia {dia,2}: S={s,4} I={i,3} R={r,3} M={m,3} | Total={suma} {valido}");
 
                 if (dia < 30)
                 {
-                    grillaPeq.AvanzarDia(4);
+                    grillaPequenia.AvanzarDia(4);
 
                 }
             }
@@ -42,7 +41,7 @@ namespace SIR.Parallel
             Console.WriteLine("Presiona Enter para iniciar scaling...");
             Console.ReadLine();
 
-            // --- experimentos scaling fuerte para 1, 2, 4, 6 cores ---
+            // scaling por core
             int[] configuraciones = new int[] { 1, 2, 4, 6 };
             double tiempoBase = 0;
 
@@ -54,7 +53,7 @@ namespace SIR.Parallel
 
                 foreach (int cores in configuraciones)
                 {
-                    Console.WriteLine($"Corriendo con {cores} core(s)...");
+                    Console.WriteLine($"Realizando simulacion con {cores} core(s)...");
 
                     CeldaParalela grilla = new CeldaParalela(
                         filas: 1000, columnas: 1000,
@@ -92,6 +91,10 @@ namespace SIR.Parallel
 
                     writer.WriteLine($"{cores},{segundos:F2},{speedup:F2}");
                 }
+
+                double aproxR0 = 0.5 / (0.05 + 0.005);
+                Console.WriteLine($"R0 aproximado del modelo: {aproxR0:F2}");
+                writer.WriteLine($"# R0 aproximado: {aproxR0:F2}");
             }
 
             Console.WriteLine();

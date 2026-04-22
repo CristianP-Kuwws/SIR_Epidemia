@@ -6,7 +6,6 @@ namespace SIR.Sequential
     {
         static void Main(string[] args)
         {
-            // Validar con grilla 10x10
 
             Console.WriteLine("--- Validacion 10x10 a 30 dias ---");
 
@@ -14,9 +13,10 @@ namespace SIR.Sequential
                 filas: 10, columnas: 10,
                 beta: 0.5, gamma: 0.05, mu: 0.005,
                 semilla: 15
+
             );
 
-            grillaPeq.Inicializar(inicialesInfectados: 3);
+            grillaPeq.Inicializar(iniInfectados: 3);
 
             int poblacionTotal = 10 * 10;
 
@@ -48,9 +48,9 @@ namespace SIR.Sequential
                 semilla: 15
             );
 
-            grilla.Inicializar(inicialesInfectados: 5);
+            grilla.Inicializar(iniInfectados: 5);
 
-            // guardar resultados en CSV
+            // guardar en CSV
             string rutaCsv = @"C:\Users\hazky\source\repos\SIR_Epidemia\results\sequential_stats.csv";
             using (var writer = new System.IO.StreamWriter(rutaCsv))
             {
@@ -65,6 +65,7 @@ namespace SIR.Sequential
 
                     if (dia % 30 == 0)
                         Console.WriteLine($"Dia {dia,3}: S={s,7} I={i,6} R={r,6} M={m,5}");
+
 
                     if (dia < 365)
                         grilla.AvanzarDia();

@@ -25,7 +25,7 @@ namespace SIR.Parallel
         private readonly double _gamma;
         private readonly double _mu;
 
-        // usamos un random por hilo para evitar condiciones de carrera
+        //  random por hilo para evitar condiciones de carrera
         [ThreadStatic]
         private static Random _hiloAleatorio;
 
@@ -47,7 +47,6 @@ namespace SIR.Parallel
 
         private int Idx(int f, int c) => f * Columnas + c;
 
-        // cada hilo cuenta con su propio Random al uso
         private Random ObtenerRandom()
         {
             if (_hiloAleatorio == null)
@@ -117,7 +116,7 @@ namespace SIR.Parallel
                 int filaInicio = idBloque * filasPorBloque;
                 int filaFin = (idBloque == maxThreads - 1) ? Filas : filaInicio + filasPorBloque;
 
-                // copiar las filas fronteras de bloques vecinos a arreglos temporales (ghost cells)
+                // ghost cells
                 EstadoCelda[] ghostArriba = new EstadoCelda[Columnas];
                 EstadoCelda[] ghostAbajo = new EstadoCelda[Columnas];
 
@@ -173,7 +172,7 @@ namespace SIR.Parallel
                 }
             });
 
-            // intercambiar buffers
+
             EstadoCelda[] temp = _actual;
             _actual = _siguiente;
             _siguiente = temp;
